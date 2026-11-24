@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Radar – kalendarz raportów</title>
+<style>
+/* VOICE  praca: archiwum, spokojne i szybkie do przeszukania
+   IDEA   ścienny kalendarz biura nieruchomości: każdy dzień to kartka z wynikiem dnia
+   PICTURE siatka miesiąca; w każdym dniu liczba nowych ofert i ocena najlepszej, kolor = jak dobry był dzień
+   COLOUR ta sama zieleń lasu co raport i ranking; bursztyn = problem ze źródłem
+   TYPE   Inter Tight + Inter
+   LAYOUT pas z nawigacją i liczbami; miesiąc na całą szerokość; pod nim lista ostatnich raportów; na telefonie dni bez opisów */
+:root{color-scheme:light dark;--bg:light-dark(#ffffff,#0f1512);--ink:light-dark(#17211c,#e6ece8);--mut:light-dark(#5b6a62,#9aa8a0);--rule:light-dark(#e2e8e4,#26302b);--soft:light-dark(#f2f6f3,#17201b);--band:#1f4a37;--good:light-dark(#1a7f45,#4cc07e);--amber:light-dark(#b7791f,#e0a84a);--amberbg:light-dark(#fff1d6,#3a2c12)}
+:root[data-theme=light]{color-scheme:light}
+:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow-x:clip}
+.wrap{max-width:1180px;margin:0 auto;padding:0 max(4vw,16px)}
+header{background:var(--band);color:#fff;padding:24px 0 24px}
+.top{display:flex;flex-wrap:wrap;gap:4px 18px;align-items:center;font-size:14px}
+.brand{font-weight:600;color:#bfe3cc;margin-right:auto}
+.top a{color:#cfe5d7;text-decoration:none;padding:6px 0;border-bottom:2px solid transparent}
+.top a[aria-current]{color:#fff;font-weight:600;border-color:#bfe3cc}
+h1{font:700 clamp(28px,4vw,42px)/1.08 "Inter Tight",Inter,system-ui,sans-serif;letter-spacing:-.02em;margin:18px 0 4px;text-wrap:balance;max-width:26ch}
+.upd{font-size:14px;color:#cfe5d7}
+.figs{display:grid;grid-template-columns:repeat(auto-fit,minmax(9em,1fr));margin-top:22px;border-top:1px solid #3d6b56}
+.figs div{padding:12px 16px 0 0}
+.figs b{display:block;font:700 30px/1 "Inter Tight",Inter,sans-serif;font-variant-numeric:tabular-nums}
+.figs span{font-size:13px;color:#cfe5d7}
+.mhead{display:flex;align-items:center;gap:12px;margin:28px 0 12px}
+.mhead h2{font:700 26px/1.1 "Inter Tight",Inter,sans-serif;margin:0 auto 0 0}
+.nav{font:600 14px Inter,system-ui,sans-serif;min-height:44px;padding:0 14px;border-radius:6px;border:1px solid var(--rule);background:var(--bg);color:var(--ink);cursor:pointer}
+.nav:disabled{color:var(--mut);cursor:default;opacity:.6}
+.grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.dow{font-size:13px;color:var(--mut);padding:0 4px 4px}
+.day{position:relative;display:flex;flex-direction:column;justify-content:space-between;min-height:112px;padding:8px 10px;border-radius:8px;background:var(--soft);color:inherit;text-decoration:none;border:2px solid transparent}
+a.day:hover{border-color:var(--good)}
+a.day:focus-visible{outline:2px solid var(--good);outline-offset:2px}
+.day.off{background:transparent;border:1px dashed var(--rule);color:var(--mut)}
+.day.today{border-color:var(--ink)}
+.day.nofile{cursor:default}
+.dn{font:700 18px/1 "Inter Tight",Inter,sans-serif}
+.cnt{font-size:13px;color:var(--mut);line-height:1.35}
+.cnt b{color:var(--ink)}
+.foot{display:flex;align-items:flex-end;justify-content:space-between;gap:6px}
+.sc{display:inline-grid;place-items:center;min-width:36px;height:28px;padding:0 6px;border-radius:5px;color:#fff;font:700 15px/1 "Inter Tight",Inter,sans-serif}
+.hi{background:#1a7f45}.mid{background:#5f8f74}.lo{background:#8a958f}.none{background:transparent;color:var(--mut);font-weight:600;font-size:13px}
+.w{position:absolute;top:7px;right:8px;width:20px;height:20px;border-radius:50%;background:var(--amberbg);color:var(--amber);font:700 13px/20px Inter,sans-serif;text-align:center}
+.lg{display:flex;flex-wrap:wrap;gap:8px 20px;font-size:13px;color:var(--mut);margin:14px 0 0}
+.lg span{display:inline-flex;align-items:center;gap:6px}
+.lg .sc{min-width:28px;height:22px;font-size:12px}
+.lg .w{position:static}
+h3{font:700 21px/1.2 "Inter Tight",Inter,sans-serif;margin:36px 0 6px}
+.list a{display:grid;grid-template-columns:7.5em minmax(0,1fr) auto;gap:14px;align-items:center;padding:12px 0;border-bottom:1px solid var(--rule);color:inherit;text-decoration:none}
+.list a:hover .s{text-decoration:underline}
+.list .d{font-weight:600;white-space:nowrap}
+.list .s{font-size:15px}
+.list .t{font-size:13px;color:var(--mut)}
+.note{font-size:13px;color:var(--mut)}
+footer{border-top:1px solid var(--rule);margin-top:28px;padding:20px 0 40px;font-size:14px;color:var(--mut)}
+@media(max-width:700px){.day{min-height:64px;padding:6px}.cnt{display:none}.dn{font-size:15px}.sc{min-width:0;height:22px;font-size:13px;padding:0 5px}.w{width:16px;height:16px;line-height:16px;font-size:11px;top:5px;right:5px}.grid{gap:4px}.list a{grid-template-columns:minmax(0,1fr) auto}.list .d{grid-column:1/3}}
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@600;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <nav class="top"><span class="brand">Radar nieruchomości</span><a href="../">Ranking ofert</a><a href="./" aria-current="page">Kalendarz raportów</a></nav>
+    <h1 id="h1">Kalendarz raportów</h1>
+    <div class="upd" id="upd"></div>
+    <div class="figs" id="figs"></div>
+  </div>
+</header>
+<main class="wrap">
+  <div class="mhead">
+    <h2 id="mname"></h2>
+    <button class="nav" id="prev" type="button" aria-label="Poprzedni miesiąc">← Poprzedni</button>
+    <button class="nav" id="next" type="button" aria-label="Następny miesiąc">Następny →</button>
+  </div>
+  <div class="grid" id="dows"></div>
+  <div class="grid" id="grid" style="margin-top:4px"></div>
+  <div class="lg">
+    <span><i class="sc hi">80</i> najlepsza oferta dnia 75+</span>
+    <span><i class="sc mid">68</i> 60–74</span>
+    <span><i class="sc lo">55</i> poniżej 60</span>
+    <span><i class="w">!</i> problem ze źródłem tego dnia</span>
+  </div>
+  <h3>Ostatnie raporty</h3>
+  <div class="list" id="list"></div>
+  <footer>
+    Każdy raport to ta sama treść, która przyszła mailem o 18:00, zapisana w repozytorium jako reports/RRRR-MM-DD.html.<br><br>
+
+  </footer>
+</main>
+<script>
+{
+const D={"today": "2026-11-24", "start": "2026-11-24", "days": [{"date": "2026-11-24", "subject": "Radar nieruchomości – 24.11.2026 – raport startowy: 536 działek, 84 domy w kryteriach", "n_dz": 536, "n_dom": 84, "drops": 0, "top": {"score": 84, "title": "Twoja nowa przestrzeń w zielonej okolicy I MPZP"}, "warn": null, "file": "2026-11-24.html"}]};
+const $=id=>document.getElementById(id);
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const MONTHS=['styczeń','luty','marzec','kwiecień','maj','czerwiec','lipiec','sierpień','wrzesień','październik','listopad','grudzień'];
+const MGEN=['stycznia','lutego','marca','kwietnia','maja','czerwca','lipca','sierpnia','września','października','listopada','grudnia'];
+const DOW=['Pn','Wt','Śr','Cz','Pt','So','Nd'];
+const pl=(n,a,b,c)=>n===1?a:(n%10>=2&&n%10<=4&&(n%100<12||n%100>14))?b:c;
+const byDate=Object.fromEntries(D.days.map(d=>[d.date,d]));
+const iso=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const cls=s=>s>=75?'hi':s>=60?'mid':'lo';
+const today=new Date(D.today+'T12:00:00'),start=new Date(D.start+'T12:00:00');
+let cur=new Date(today.getFullYear(),today.getMonth(),1,12);
+const link=d=>d.file?esc(d.file):null;
+
+function header(){
+  const n=D.days.length,dz=D.days.reduce((s,d)=>s+d.n_dz,0),dom=D.days.reduce((s,d)=>s+d.n_dom,0),warn=D.days.filter(d=>d.warn).length;
+  const best=[...D.days].filter(d=>d.top).sort((a,b)=>b.top.score-a.top.score)[0];
+  $('h1').textContent=`${n} ${pl(n,'raport','raporty','raportów')} od ${start.getDate()} ${MGEN[start.getMonth()]}, najlepszy dzień: ${best.date.slice(8,10).replace(/^0/,'')} ${MGEN[+best.date.slice(5,7)-1]} (${best.top.score}/100)`;
+  $('upd').textContent=`Ostatni raport: ${today.getDate()} ${MGEN[today.getMonth()]} ${today.getFullYear()}, 18:00`;
+  $('figs').innerHTML=[[n,pl(n,'raport','raporty','raportów')],[dz,pl(dz,'nowa działka','nowe działki','nowych działek')],[dom,pl(dom,'nowy dom','nowe domy','nowych domów')],[warn,pl(warn,'dzień z problemem źródła','dni z problemem źródła','dni z problemem źródła')]]
+    .map(([v,l])=>`<div><b>${v}</b><span>${l}</span></div>`).join('');
+}
+function month(){
+  const y=cur.getFullYear(),m=cur.getMonth();
+  $('mname').textContent=`${MONTHS[m][0].toUpperCase()+MONTHS[m].slice(1)} ${y}`;
+  $('prev').disabled=new Date(y,m,1)<=new Date(start.getFullYear(),start.getMonth(),1);
+  $('next').disabled=new Date(y,m,1)>=new Date(today.getFullYear(),today.getMonth(),1);
+  const first=new Date(y,m,1,12),lead=(first.getDay()+6)%7,dim=new Date(y,m+1,0).getDate();
+  let h='';for(let i=0;i<lead;i++)h+='<div></div>';
+  for(let day=1;day<=dim;day++){
+    const k=iso(new Date(y,m,day,12)),d=byDate[k],isT=k===D.today;
+    if(!d){h+=`<div class="day off ${isT?'today':''}"><span class="dn">${day}</span><span class="cnt">${new Date(k)>today?'':'brak raportu'}</span></div>`;continue}
+    const nNew=d.n_dz+d.n_dom;
+    const cnt=nNew?`<b>${d.n_dz}</b> ${pl(d.n_dz,'działka','działki','działek')}<br><b>${d.n_dom}</b> ${pl(d.n_dom,'dom','domy','domów')}${d.drops?`<br>${d.drops} ${pl(d.drops,'obniżka','obniżki','obniżek')}`:''}`:'bez nowości';
+    const sc=d.top?`<span class="sc ${cls(d.top.score)}">${d.top.score}</span>`:'<span class="sc none">–</span>';
+    const tip=esc(d.subject+(d.top?` · najlepsza: ${d.top.title}`:'')+(d.warn?` · problem: ${d.warn}`:''));
+    const inner=`<span class="dn">${day}</span>${d.warn?'<i class="w" aria-label="problem ze źródłem">!</i>':''}<div class="foot"><span class="cnt">${cnt}</span>${sc}</div>`;
+    h+=link(d)?`<a class="day ${isT?'today':''}" href="${link(d)}" title="${tip}">${inner}</a>`:`<div class="day nofile ${isT?'today':''}" title="${tip}">${inner}</div>`;
+  }
+  $('grid').innerHTML=h;
+}
+function list(){
+  $('list').innerHTML=[...D.days].reverse().slice(0,7).map(d=>{
+    const dt=new Date(d.date+'T12:00:00');const wd=['niedz.','pon.','wt.','śr.','czw.','pt.','sob.'][dt.getDay()];
+    const tail=[d.top?`najlepsza: ${esc(d.top.title)}`:'',d.warn?`problem: ${esc(d.warn)}`:''].filter(Boolean).join(' · ');
+    const body=`<span class="d">${wd} ${dt.getDate()} ${MGEN[dt.getMonth()]}</span><span><span class="s">${esc(d.subject.replace(/^Radar nieruchomości – [\d.]+ – /,''))}</span><br><span class="t">${tail||'&nbsp;'}</span></span>${d.top?`<span class="sc ${cls(d.top.score)}">${d.top.score}</span>`:'<span class="sc none">–</span>'}`;
+    return link(d)?`<a href="${link(d)}">${body}</a>`:`<a aria-disabled="true" tabindex="-1" style="cursor:default">${body}</a>`;
+  }).join('');
+}
+$('dows').innerHTML=DOW.map(d=>`<div class="dow">${d}</div>`).join('');
+$('prev').addEventListener('click',()=>{cur=new Date(cur.getFullYear(),cur.getMonth()-1,1,12);month()});
+$('next').addEventListener('click',()=>{cur=new Date(cur.getFullYear(),cur.getMonth()+1,1,12);month()});
+header();month();list();
+}
+</script>
+</body>
+</html>
