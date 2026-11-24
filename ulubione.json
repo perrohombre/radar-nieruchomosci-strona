@@ -1,4 +1,9 @@
 {
- "updated": null,
- "items": {}
+ "updated": "2026-11-24 22:56",
+ "items": {
+  "test:radar-test": {
+   "added": "2026-11-24 22:56",
+   "note": ""
+  }
+ }
 }
